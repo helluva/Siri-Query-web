@@ -1,0 +1,17 @@
+{
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "cal stephens",
+      "email": "cal@gatech.edu"
+    }
+  ],
+  "name": "siri-query-web",
+  "readme": "ERROR: No README data found!",
+  "version": "0.0.1",
+  dependencies: {
+      "express": "^4.7.3",
+      "express-handlebars": "^3.0.0"
+  }
+}
