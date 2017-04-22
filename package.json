@@ -13,5 +13,8 @@
   "dependencies": {
       "express": "^4.7.3",
       "express-handlebars": "^3.0.0"
+  },
+  "scripts": {
+    "start": "node index.js"
   }
 }
