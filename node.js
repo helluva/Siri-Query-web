@@ -1,18 +1,26 @@
-const http = require('http')
-const port = 3000
+const express = require('express')
+const path = require('path')
+const handlebars = require('express-handlebars')
 
-const requestHandler = (request, response) => {
-    console.log(request.url)
-    response.end("Welcome to my site")
-}
+const app = express()
 
-const server = http.createServer(requestHandler)
+app.engine('.hbs', handlebars({
+    defaultLayout: 'main',
+    extname: '.hbs',
+    layoutsDir: path.join(__dirname, 'views/layouts')
+}))
 
-server.listen(port, (error) => {
-    
-    if (error) {
-        return console.log('something bad happened', error)
-    }
-    
-    console.log('listening!')
+app.set('view engine', '.hbs')
+app.set('views', path.join(__dirname, 'views'))
+
+
+app.get('/', (request, response) => {
+    response.render('home', {
+        url: request.url
+    })
 })
+
+app.use(express.static(__dirname + '/assets'));
+app.use('/assets', express.static(__dirname + '/assets'));
+
+app.listen(3000)  
