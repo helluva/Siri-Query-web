@@ -10,7 +10,7 @@
   "name": "siri-query-web",
   "readme": "ERROR: No README data found!",
   "version": "0.0.1",
-  dependencies: {
+  "dependencies": {
       "express": "^4.7.3",
       "express-handlebars": "^3.0.0"
   }
