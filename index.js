@@ -4,6 +4,9 @@ const handlebars = require('express-handlebars')
 
 const app = express()
 
+
+//setup endpoints
+
 app.engine('.hbs', handlebars({
     defaultLayout: 'main',
     extname: '.hbs',
@@ -20,7 +23,14 @@ app.get('/', (request, response) => {
     })
 })
 
-app.use(express.static(__dirname + '/assets'));
-app.use('/assets', express.static(__dirname + '/assets'));
 
-app.listen(3000)  
+//publicize server
+
+function makeDirectoryPublic(name) {
+    app.use(express.static(__dirname + name));
+    app.use(name, express.static(__dirname + name));
+}
+
+['/assets', '/scripts', '/css'].forEach(makeDirectoryPublic)
+
+app.listen(8081)
