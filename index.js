@@ -42,12 +42,14 @@ app.post('/uploadBlob', (request, response) => {
 
 //server-facing endpoints
 
+
+
 app.get('/recordingAvailable', (request, response) => {
     response.send("true")
 })
 
 app.get('/nextRecording.wav', (request, response) => {
-    var filePath = "out.wav"
+    var filePath = "recordings/out.wav"
     response.writeHead(200, {
           "Content-Type": "application/octet-stream",
           "Content-Disposition" : "attachment; filename=nextRecording.wav"});

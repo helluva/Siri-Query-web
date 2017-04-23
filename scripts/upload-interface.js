@@ -13,9 +13,11 @@ var blobToBase64 = function(blob, completion) {
 function uploadBlob(blob) {
     
     console.log(blob)
+    console.log("prepping base64")
     
     blobToBase64(blob, function(base64) {
-        console.log(base64)
+        
+        console.log("done with base64")
         
         $.ajax({
             type: 'POST',
@@ -23,6 +25,15 @@ function uploadBlob(blob) {
             data: JSON.stringify({"type": "upload", "audio-base64": base64}),
             contentType: "application/json; charset=utf-8",
             dataType   : "json",
+            success: function(response) {
+                updateStatusText("Waiting for Siri to respond...")
+            }
         })
     })
+}
+
+function updateStatusText(text) {
+    $("#microphone-icon").css("display", "none")
+    $("#check-icon").css("display", "none")
+    $("#status-text").html(text)
 }

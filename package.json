@@ -14,7 +14,9 @@
       "express": "^4.7.3",
       "express-handlebars": "^3.0.0",
       "request": "^2.81.0",
-      "body-parser": "^1.17.1"
+      "body-parser": "^1.17.1",
+      "fs": "^0.0.1-security",
+      "request": "^2.81.0"
   },
   "scripts": {
     "start": "node index.js"

@@ -26,13 +26,20 @@ function gotStream(stream) {
 }
 
 function initAudio() {
+    
     if (!navigator.getUserMedia)
         navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    
+    if (navigator.getUserMedia == undefined) {
+        updateStatusText("Your browser doesn't support SiriQuery.</br>Try Google Chrome or Firefox.")
+        return
+    }
+    
     if (!navigator.cancelAnimationFrame)
         navigator.cancelAnimationFrame = navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
     if (!navigator.requestAnimationFrame)
         navigator.requestAnimationFrame = navigator.webkitRequestAnimationFrame || navigator.mozRequestAnimationFrame;
-
+    
     navigator.getUserMedia(
         {
             "audio": {
@@ -69,6 +76,7 @@ function startRecording() {
     $("#main-button-link").attr("onclick", "stopRecording()")
     $("#microphone-icon").css("display", "none")
     $("#check-icon").css("display", "")
+    $("#status-text").html("")
 }
 
 function stopRecording() {
@@ -86,6 +94,5 @@ function stopRecording() {
     siriWave.setAmplitude(0.3)
     
     $("#main-button-link").attr("onclick", "startRecording()")
-    $("#microphone-icon").css("display", "")
-    $("#check-icon").css("display", "none")
+    updateStatusText("Uploading query...")
 }

@@ -42,3 +42,11 @@ body {
 #main-buttons img {
     width: 60px;
 }
+
+#status-text {
+    font-size: 18px;
+    margin: 0 auto;
+    text-align: center;
+    font-family: SF-display-regular;
+    color: #fff;
+}
