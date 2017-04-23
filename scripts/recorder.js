@@ -107,10 +107,14 @@ DEALINGS IN THE SOFTWARE.
   };
 
   Recorder.setupDownload = function(blob, filename){
-    var url = (window.URL || window.webkitURL).createObjectURL(blob);
-    var link = document.getElementById("save");
-    link.href = url;
-    link.download = filename || 'output.wav';
+    //var url = (window.URL || window.webkitURL).createObjectURL(blob);
+    //var link = document.getElementById("save");
+    //link.href = url;
+    //link.download = filename || 'output.wav';
+      
+      //back out to my code:
+      uploadBlob(blob)
+      
   }
 
   window.Recorder = Recorder;
