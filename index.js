@@ -10,7 +10,7 @@ const app = express()
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json({limit: "100mb"}))
-
+app.use(bodyParser.raw({limit: "100mb"}))
 
 //setup endpoints
 
@@ -25,7 +25,8 @@ app.set('views', path.join(__dirname, 'views'))
 
 
 var queued_tasks = []
-var completed_tasks = {}
+var completed_tasks = []
+
 
 //***********************
 //client-facing endpoints
@@ -47,6 +48,7 @@ app.post('/uploadBlob', (request, response) => {
     fs.writeFile(file_path, audio_base64, 'base64', function(error) { console.log(error) })
     
     queued_tasks.push(task_id)
+    console.log(queued_tasks)
     response.send({'status': 'success', 'task-id': task_id})
 })
 
@@ -54,23 +56,18 @@ app.post('/uploadBlob', (request, response) => {
 //response["code"] is either unknown-task, waiting-for-server, or response-ready.
 //if response-ready, then response["response"] will be something when i get to it
 app.post('/pollForSiriResponse', (request, response) => {
-    console.log(request.body)
     var taskId = request.body["task-id"]
-    var completedTask = completed_tasks[taskId]
     
-    if (completedTask == undefined) {
+    if (!completed_tasks.includes(taskId)) {
         if (!queued_tasks.includes(taskId)) {
-            console.log(taskId)
-            console.log(queued_tasks)
             response.send({'status': 'failure', 'code': 'unknown-task'})
         } else {
             response.send({'status': 'failure', 'code': 'waiting-for-server'})
         }
-        
         return
     }
     
-    response.send({'status': 'success', 'code': 'response-ready', 'response': completedTask})
+    response.send({'status': 'success', 'code': 'response-ready'})
 })
 
 
@@ -78,22 +75,49 @@ app.post('/pollForSiriResponse', (request, response) => {
 
 
 app.get('/recordingAvailable', (request, response) => {
-    response.send((available_recordings.length > 0) ? "true" : "false")
+    console.log("recordings avaiable? "+ queued_tasks)
+    if (queued_tasks.length == 0) {
+        response.send("false")
+    } else {
+        response.send(queued_tasks[0]) //send the first task id
+    }
 })
 
 app.get('/nextRecording.wav', (request, response) => {
-    if (available_recordings.length == 0) return
-    var recording = available_recordings.shift() //pop the first element and deliver it
-    var file_path = recording["path"]
-    var response = recording["response"]
+    if (queued_tasks.length == 0) return
+    var task_id = queued_tasks.shift() //pop the first element and deliver it
     
-    var filePath = "recordings/out.wav"
+    var filePath = "recordings/" + task_id + ".wav"
     response.writeHead(200, {
           "Content-Type": "application/octet-stream",
           "Content-Disposition" : "attachment; filename=nextRecording.wav"});
     
     fs.createReadStream(filePath).pipe(response);
     
+    response.send({status: 'success'})
+})
+
+//request.body is {"task-id": ..., "siri-response": {"image": ..., "audio" ...}}
+app.post('/deliverSiriResponse', (request, response) => {
+    
+    body = request.body
+    
+    task_id = body["task-id"]
+    siri_response = body["siri-response"]
+    
+    if (task_id == undefined 
+        || siri_response == undefined 
+        || siri_response["image"] == undefined 
+        || siri_response["audio"] == undefined) {
+            response.send({status: 'failure'})
+            return
+    }
+    
+    //write files to disk
+    fs.writeFile("siri-responses/" + task_id + ".png", siri_response["image"], 'base64', function(err) {})
+    fs.writeFile("siri-responses/" + task_id + ".mp4", siri_response["audio"], 'base64', function(err) {})
+    
+    completed_tasks.push(task_id)
     response.send({status: 'success'})
 })
 
@@ -105,6 +129,6 @@ function makeDirectoryPublic(name) {
     app.use(name, express.static(__dirname + name));
 }
 
-['/assets', '/scripts', '/css'].forEach(makeDirectoryPublic)
+['/assets', '/scripts', '/css', '/siri-responses'].forEach(makeDirectoryPublic)
 
 app.listen(8081)

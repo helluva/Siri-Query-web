@@ -4,7 +4,25 @@ function pollServerForResponse() {
     if (task_id == undefined) return
     
     $.post('/pollForSiriResponse', {"task-id": task_id}, function(response) {
+        
         console.log(response)
+        
+        if (response["code"] == undefined || response["code"] == 'unknown-task') {
+            return
+        }
+        
+        if (response["code"] == "response-ready") {
+            var image = new Image();
+            image.src = "siri-responses/" + task_id + ".png"
+            document.body.appendChild(image);
+            
+            var audio = new Audio();
+            audio.src = "siri-responses/" + task_id + ".mp4"
+            audio.autoplay = true
+            document.body.appendChild(audio);
+            return
+        }
+        
         pollServerForResponse()
     }, 'json')
 }
@@ -32,10 +50,17 @@ function uploadBlob(blob) {
         
         updateStatusText("Waiting for Siri to respond...")
         
-        $.post('/pollForSiriResponse', {"type": "upload", "audio-base64": base64}, function(response) {
-            task_id = response["task-id"]
+        $.ajax({
+            type: 'POST',
+            url: 'uploadBlob',
+            data: JSON.stringify({"type": "upload", "audio-base64": base64}),
+            contentType: "application/json; charset=utf-8",
+            dataType   : "json",
+            success: function(response) {
+                task_id = response["task-id"]
                 pollServerForResponse()
-        }, 'json')
+            }
+        })
     })
 }
 
