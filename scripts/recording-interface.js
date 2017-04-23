@@ -80,6 +80,8 @@ function startRecording() {
     $("#status-text").html("")
     $('#response-image').css('display', "none")
     $('#siri-container').css('display', "")
+    
+    playAudioFromServer("assets/siriPrompt.mp3")
 }
 
 function stopRecording() {
@@ -98,4 +100,5 @@ function stopRecording() {
     
     $("#main-button-link").attr("onclick", "startRecording()")
     updateStatusText("Uploading query...")
+    playAudioFromServer("assets/siriDone.mp3")
 }

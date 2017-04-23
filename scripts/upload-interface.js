@@ -1,5 +1,12 @@
 var task_id = undefined
 
+function playAudioFromServer(path) {
+    var audio = new Audio();
+    audio.src = path
+    audio.autoplay = true
+    document.body.appendChild(audio);
+}
+
 function updateWithResponseForTaskId(task_id) {
     $('#response-image').attr('src', "siri-responses/" + task_id + ".png")
     $('#response-image').css('display', "")
@@ -16,11 +23,8 @@ function updateWithResponseForTaskId(task_id) {
             { opacity: 1, queue: false },
             "slow"
         )
-
-    var audio = new Audio();
-    audio.src = "siri-responses/" + task_id + ".mp4"
-    audio.autoplay = true
-    document.body.appendChild(audio);
+    
+    playAudioFromServer("siri-responses/" + task_id + ".mp4")
 }
 
 function pollServerForResponse() {
@@ -83,11 +87,14 @@ function uploadBlob(blob) {
 function inputText() {
     var userInput = prompt("What do you want to ask Siri?")
     
-    updateStatusText("Uploading query...")
     $('#response-image').css('display', "none")
     $('#siri-container').css('display', "")
     
     if (userInput != null) {
+        playAudioFromServer("assets/siriPrompt.mp3")
+        
+        updateStatusText("Uploading query...")
+        
         $.ajax({
             type: 'POST',
             url: 'uploadBlob',
@@ -102,6 +109,8 @@ function inputText() {
                 pollServerForResponse()
             }
         })
+    } else {
+        playAudioFromServer("assets/siriNothing.mp3")
     }
 }
 
