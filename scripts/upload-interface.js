@@ -5,7 +5,7 @@ function pollServerForResponse() {
     
     $.post('/pollForSiriResponse', {"task-id": task_id}, function(response) {
         
-        console.log(response)
+        console.log(task_id)
         
         if (response["code"] == undefined || response["code"] == 'unknown-task') {
             return

@@ -26,6 +26,7 @@ app.set('views', path.join(__dirname, 'views'))
 
 var queued_tasks = []
 var completed_tasks = []
+var waiting_for_server = false
 
 
 //***********************
@@ -74,18 +75,30 @@ app.post('/pollForSiriResponse', (request, response) => {
 //server-facing endpoints
 
 
+app.get('/reset', (request, response) => {
+    waiting_for_server = false
+    response.send({status: 'success'})
+})
+
 app.get('/recordingAvailable', (request, response) => {
     console.log("recordings avaiable? "+ queued_tasks)
+    
+    if (waiting_for_server) {
+        response.send("false")
+        return
+    }
+    
     if (queued_tasks.length == 0) {
         response.send("false")
     } else {
         response.send(queued_tasks[0]) //send the first task id
+        waiting_for_server = true //don't send another recording until the server sends back a response
     }
 })
 
-app.get('/nextRecording.wav', (request, response) => {
+/*app.get('/nextRecording.wav', (request, response) => {
     if (queued_tasks.length == 0) return
-    var task_id = queued_tasks.shift() //pop the first element and deliver it
+    var task_id = 
     
     var filePath = "recordings/" + task_id + ".wav"
     response.writeHead(200, {
@@ -95,7 +108,7 @@ app.get('/nextRecording.wav', (request, response) => {
     fs.createReadStream(filePath).pipe(response);
     
     response.send({status: 'success'})
-})
+})*/
 
 //request.body is {"task-id": ..., "siri-response": {"image": ..., "audio" ...}}
 app.post('/deliverSiriResponse', (request, response) => {
@@ -113,6 +126,10 @@ app.post('/deliverSiriResponse', (request, response) => {
             return
     }
     
+    queued_tasks.shift() //remove the current task
+    //array.splice(queued_tasks, queued_tasks.indexOf(task_id)) //remove the task
+    waiting_for_server = false //allow the server to receive more recordings
+    
     //write files to disk
     fs.writeFile("siri-responses/" + task_id + ".png", siri_response["image"], 'base64', function(err) {})
     fs.writeFile("siri-responses/" + task_id + ".mp4", siri_response["audio"], 'base64', function(err) {})
@@ -129,6 +146,6 @@ function makeDirectoryPublic(name) {
     app.use(name, express.static(__dirname + name));
 }
 
-['/assets', '/scripts', '/css', '/siri-responses'].forEach(makeDirectoryPublic)
+['/assets', '/scripts', '/css', '/siri-responses', '/recordings'].forEach(makeDirectoryPublic)
 
 app.listen(8081)
