@@ -6,17 +6,28 @@
 <script src="scripts/upload-interface.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
-<div id="siriquery-title">SiriQuery</div>
-<div id="siriquery-subtitle">Siri on the web, for the very first time.</div>
 
-<div id="siri-container"></div>
-<script>loadSiri()</script>
+<div id="content">
+    <div id="siriquery-title">SiriQuery</div>
+    <div id="siriquery-subtitle">Siri on the web, for the very first time.</div>
 
-<a href="#" id="main-button-link" onclick="startRecording()">
-    <div id="main-buttons">
-        <img id="microphone-icon" src="assets/microphone.png">
-        <img id="check-icon" style="display: none;" src="assets/check.png">
+    <div id="siri-container"></div>
+    <script>loadSiri()</script>
+
+    <div id="response-content">
+        <img id="response-image" src="" style="display: none;"/>
     </div>
-</a>
 
-<div id="status-text"></div>
+    <a href="#" id="main-button-link" onclick="startRecording()">
+        <div id="main-buttons">
+            <img id="microphone-icon" src="assets/microphone.png">
+            <img id="check-icon" style="display: none;" src="assets/check.png">
+        </div>
+    </a>
+    
+    <a href="#" id="input-text-link" onclick="inputText()">
+        <img id="input-text-icon" src="assets/edit.png">
+    </a>
+
+    <div id="status-text"></div>
+</div>

@@ -26,6 +26,7 @@ app.set('views', path.join(__dirname, 'views'))
 
 var queued_tasks = []
 var completed_tasks = []
+var rawtexts = {}
 var waiting_for_server = false
 
 
@@ -41,12 +42,21 @@ app.get('/', (request, response) => {
 })
 
 //uploads an audio file though body["audio-base64"]. response["task-id"] is an identifier for the queued task.
+//if body["raw-text"] exists, the base64 audio is ignored.
 app.post('/uploadBlob', (request, response) => {
     let task_id = uuid()
-    let file_path = "recordings/" + task_id + ".wav"
     
-    var audio_base64 = request.body["audio-base64"]
-    fs.writeFile(file_path, audio_base64, 'base64', function(error) { console.log(error) })
+    //use the raw text if it exists -- otherwise check for the recording
+    if (request.body["raw-text"] != undefined) {
+        rawtexts[task_id] = request.body["raw-text"]
+        console.log("received " + request.body["raw-text"])
+    } else {
+    
+        let file_path = "recordings/" + task_id + ".wav"
+    
+        var audio_base64 = request.body["audio-base64"]
+        fs.writeFile(file_path, audio_base64, 'base64', function(error) { console.log(error) })
+    }
     
     queued_tasks.push(task_id)
     console.log(queued_tasks)
@@ -96,19 +106,21 @@ app.get('/recordingAvailable', (request, response) => {
     }
 })
 
-/*app.get('/nextRecording.wav', (request, response) => {
-    if (queued_tasks.length == 0) return
-    var task_id = 
-    
-    var filePath = "recordings/" + task_id + ".wav"
-    response.writeHead(200, {
-          "Content-Type": "application/octet-stream",
-          "Content-Disposition" : "attachment; filename=nextRecording.wav"});
-    
-    fs.createReadStream(filePath).pipe(response);
-    
-    response.send({status: 'success'})
-})*/
+//if the next query has a rawtext, return that rawtext. Otherwise, "false".
+app.get('/rawtext', (request, response) => {
+    if (queued_tasks.length == 0) {
+        response.send("false")
+    } else {
+        task_id = queued_tasks[0]
+        rawtext = rawtexts[task_id]
+        
+        if (rawtext != undefined) {
+            response.send(rawtext)
+        } else {
+            response.send("false")
+        }
+    }
+})
 
 //request.body is {"task-id": ..., "siri-response": {"image": ..., "audio" ...}}
 app.post('/deliverSiriResponse', (request, response) => {

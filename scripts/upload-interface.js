@@ -1,25 +1,39 @@
 var task_id = undefined
 
+function updateWithResponseForTaskId(task_id) {
+    $('#response-image').attr('src', "siri-responses/" + task_id + ".png")
+    $('#response-image').css('display', "")
+    $('#siri-container').css('display', "none")
+    $("#microphone-icon").css("display", "")
+    $("#input-text-icon").css("display", "")
+    $("#check-icon").css("display", "none")
+    $("#status-text").html("")
+    
+    $("#response-image")
+        .css('opacity', 0)
+        .slideDown('slow')
+        .animate(
+            { opacity: 1, queue: false },
+            "slow"
+        )
+
+    var audio = new Audio();
+    audio.src = "siri-responses/" + task_id + ".mp4"
+    audio.autoplay = true
+    document.body.appendChild(audio);
+}
+
 function pollServerForResponse() {
     if (task_id == undefined) return
     
     $.post('/pollForSiriResponse', {"task-id": task_id}, function(response) {
-        
-        console.log(task_id)
         
         if (response["code"] == undefined || response["code"] == 'unknown-task') {
             return
         }
         
         if (response["code"] == "response-ready") {
-            var image = new Image();
-            image.src = "siri-responses/" + task_id + ".png"
-            document.body.appendChild(image);
-            
-            var audio = new Audio();
-            audio.src = "siri-responses/" + task_id + ".mp4"
-            audio.autoplay = true
-            document.body.appendChild(audio);
+            updateWithResponseForTaskId(task_id)
             return
         }
         
@@ -27,7 +41,8 @@ function pollServerForResponse() {
     }, 'json')
 }
 
-//uploading a blob
+
+//uploading an audio blob
 
 var blobToBase64 = function(blob, completion) {
     var reader = new FileReader();
@@ -48,8 +63,6 @@ function uploadBlob(blob) {
     
     blobToBase64(blob, function(base64) {
         
-        updateStatusText("Waiting for Siri to respond...")
-        
         $.ajax({
             type: 'POST',
             url: 'uploadBlob',
@@ -57,6 +70,7 @@ function uploadBlob(blob) {
             contentType: "application/json; charset=utf-8",
             dataType   : "json",
             success: function(response) {
+                updateStatusText("Waiting for Siri to respond...")
                 task_id = response["task-id"]
                 pollServerForResponse()
             }
@@ -64,8 +78,37 @@ function uploadBlob(blob) {
     })
 }
 
+
+//upload raw text
+function inputText() {
+    var userInput = prompt("What do you want to ask Siri?")
+    
+    updateStatusText("Uploading query...")
+    $('#response-image').css('display', "none")
+    $('#siri-container').css('display', "")
+    
+    if (userInput != null) {
+        $.ajax({
+            type: 'POST',
+            url: 'uploadBlob',
+            data: JSON.stringify({"type": "upload", "raw-text": userInput}),
+            contentType: "application/json; charset=utf-8",
+            dataType   : "json",
+            success: function(response) {
+                
+                updateStatusText("Waiting for Siri to respond...")
+                
+                task_id = response["task-id"]
+                pollServerForResponse()
+            }
+        })
+    }
+}
+
+
 function updateStatusText(text) {
     $("#microphone-icon").css("display", "none")
     $("#check-icon").css("display", "none")
+    $("#input-text-icon").css("display", "none")
     $("#status-text").html(text)
 }

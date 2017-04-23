@@ -75,8 +75,11 @@ function startRecording() {
     
     $("#main-button-link").attr("onclick", "stopRecording()")
     $("#microphone-icon").css("display", "none")
+    $("#input-text-icon").css("display", "none")
     $("#check-icon").css("display", "")
     $("#status-text").html("")
+    $('#response-image').css('display', "none")
+    $('#siri-container').css('display', "")
 }
 
 function stopRecording() {
