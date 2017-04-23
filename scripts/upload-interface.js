@@ -1,3 +1,16 @@
+var task_id = undefined
+
+function pollServerForResponse() {
+    if (task_id == undefined) return
+    
+    $.post('/pollForSiriResponse', {"task-id": task_id}, function(response) {
+        console.log(response)
+        pollServerForResponse()
+    }, 'json')
+}
+
+//uploading a blob
+
 var blobToBase64 = function(blob, completion) {
     var reader = new FileReader();
     
@@ -17,18 +30,12 @@ function uploadBlob(blob) {
     
     blobToBase64(blob, function(base64) {
         
-        console.log("done with base64")
+        updateStatusText("Waiting for Siri to respond...")
         
-        $.ajax({
-            type: 'POST',
-            url: 'uploadBlob',
-            data: JSON.stringify({"type": "upload", "audio-base64": base64}),
-            contentType: "application/json; charset=utf-8",
-            dataType   : "json",
-            success: function(response) {
-                updateStatusText("Waiting for Siri to respond...")
-            }
-        })
+        $.post('/pollForSiriResponse', {"type": "upload", "audio-base64": base64}, function(response) {
+            task_id = response["task-id"]
+                pollServerForResponse()
+        }, 'json')
     })
 }
 
